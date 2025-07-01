@@ -1,0 +1,16 @@
+Package: FaciesIdentificator
+Title: Idetifica facies sensu Cavallero et al. (2007) di rilievi vegetazionali
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Marco",
+           family = "Pittarello",
+           role = c("aut", "cre"),
+           email = "marco.pittarello1987@gmail.com",
+           comment = c(ORCID = "0000-0001-6748-8790"))
+Description: ---
+Imports: shiny, rsconnect, shinythemes, vegan, readxl, readr, writexl,dplyr, DT
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
