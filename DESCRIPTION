@@ -1,4 +1,5 @@
 Package: FaciesIdentificator
+<<<<<<< HEAD
 Title: Idetifica facies sensu Cavallero et al. (2007) di rilievi vegetazionali
 Version: 0.0.0.9000
 Authors@R: 
@@ -9,6 +10,14 @@ Authors@R:
            comment = c(ORCID = "0000-0001-6748-8790"))
 Description: ---
 Imports: shiny, rsconnect, shinythemes, vegan, readxl, readr, writexl,dplyr, DT
+=======
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
+>>>>>>> 3e5baf641b48e3df512bee1189b19f3bf5ea6513
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8
