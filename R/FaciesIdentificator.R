@@ -1,4 +1,4 @@
-#' First ten species for dendrogram
+#' Facies Identificator
 #'
 #' @description Identifica le facies pastorali sensu Cavallero et al (2007) di rilievi vegetazionali  
 #' @param tbd Dataframe con rilievi vegetazionali da identificare (tbd=To be defined). Righe = Specie (nomenclatura Aeschimann et al 2004), Colonne = Rilievi
