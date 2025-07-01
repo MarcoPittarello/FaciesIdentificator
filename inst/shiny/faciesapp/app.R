@@ -1,8 +1,8 @@
 # ---- UI ----
 ui <- shiny::fluidPage(
   shiny::titlePanel(shiny::strong("Facies Identificator")),
-  shinythemes::shinytheme("cosmo"),
-  shiny::navbarPage(icon = shiny::icon("home"),
+  #shinythemes::shinytheme("cosmo"),
+  shiny::navbarPage(icon("home"),
                     
                     shiny::tabPanel("Istruzioni",
                                     shiny::fluidPage(
