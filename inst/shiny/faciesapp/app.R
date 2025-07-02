@@ -125,7 +125,7 @@ server <- function(input, output, session) {
     tbd <- read_data(input$file_tbd, sheet = if (ext_tbd == "xlsx") input$sheet_tbd else NULL)
     ref <- read_data(input$file_ref, sheet = if (ext_ref == "xlsx") input$sheet_ref else NULL)
     
-    FaciesIdentificator::FaciesIdentificator(
+    FaciesIdentificator(
       tbd = tbd,
       ref = ref,
       prime10tbd = input$prime10,
