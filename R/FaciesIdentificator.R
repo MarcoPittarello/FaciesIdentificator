@@ -162,9 +162,9 @@ FaciesIdentificator=function(tbd,ref,prime10tbd=T,soglia=F,valore.soglia=0.5){
   
   # output complessivo 
   output.list<-list(Jaccard=list(complessivo=ris.Jacc.TOT,
-                                 sintetico=ris.Jacc),
+                                 sintetico=data.frame(ris.Jacc)),
                     Bray=list(complessivo=ris.bray.TOT,
-                              sintetico=ris.bray))
+                              sintetico=data.frame(ris.bray)))
   
   return(output.list)
 }
