@@ -2,7 +2,7 @@
 #' @export
 FIapp <- function() {
   
-  lib <- c ("vegan","shiny","shinythemes","writexl","DT","readr","readxl")
+  lib <- c ("vegan","shiny","shinythemes","writexl","DT","readr","readxl","FaciesIdentificator")
   
   # Install and load libraries
   for (i in lib) {
