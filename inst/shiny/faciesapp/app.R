@@ -64,7 +64,11 @@ ui <- fluidPage(
                                                                             downloadButton("download_bray_synth_xlsx", "Scarica XLSX")
                                                             )
                                                           )
-                                          )
+                                          ),
+                                          tabPanel("CEP names",
+                                                   DT::dataTableOutput("cep_tab"),
+                                                   downloadButton("download_cep_csv", "Scarica CSV"),
+                                                   downloadButton("download_cep_xlsx", "Scarica XLSX"))
                                         )
                                       )
                                     )
@@ -174,6 +178,22 @@ server <- function(input, output, session) {
   output$download_bray_synth_xlsx <- downloadHandler(
     filename = function() "Bray_sintetico.xlsx",
     content = function(file) writexl::write_xlsx(dati()$Bray$sintetico, path = file)
+  )
+  
+  # Output CEP
+  output$cep_tab <- DT::renderDataTable({
+    req(dati())
+    dati()$cepNames
+  }, filter = "top", options = list(pageLength = 10))
+  
+  # Download handler CEP
+  output$download_cep_csv <- downloadHandler(
+    filename = function() "Classificazione_CEP.csv",
+    content = function(file) readr::write_csv(dati()$cepNames, file)
+  )
+  output$download_cep_xlsx <- downloadHandler(
+    filename = function() "Classificazione_CEP.xlsx",
+    content = function(file) writexl::write_xlsx(dati()$cepNames, path = file)
   )
 }
 
