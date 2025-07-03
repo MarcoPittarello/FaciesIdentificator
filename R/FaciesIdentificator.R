@@ -40,8 +40,6 @@ FaciesIdentificator=function(tbd,ref,prime10tbd=T,soglia=F,valore.soglia=0.5){
                       })
   )
   
-  # cep names
-  
   
   # processing
   if(prime10tbd==T){
@@ -49,6 +47,11 @@ FaciesIdentificator=function(tbd,ref,prime10tbd=T,soglia=F,valore.soglia=0.5){
   }else if (prime10tbd==F){
     data=tbd
   }
+  
+  # cep names
+  cep<-data.frame(specie=data$specie,
+                  cep=vegan::make.cepnames(data$specie))
+  
   
   risultato<-lapply(2:ncol(data), function(i){
     
@@ -134,6 +137,9 @@ FaciesIdentificator=function(tbd,ref,prime10tbd=T,soglia=F,valore.soglia=0.5){
     mat
   }))
   
+  ris.bray<-cbind(data.frame(rilievo=rownames(ris.bray)),
+                  data.frame(ris.bray))
+  
   ris.Jacc <- do.call(rbind, lapply(1:(ncol(data)-1), function(i) {
     mat <- risultato[[i]]$sintetico$Jaccard
     n<-length(mat)
@@ -145,6 +151,8 @@ FaciesIdentificator=function(tbd,ref,prime10tbd=T,soglia=F,valore.soglia=0.5){
     colnames(mat) <- paste0("Facies_", 1:n.max)  # nomi coerenti
     mat
   }))
+  ris.Jacc<-cbind(data.frame(rilievo=rownames(ris.Jacc)),
+                  data.frame(ris.Jacc))
   
   # unione output complessivi 
   ris.bray.TOT<-do.call(rbind,lapply(1:(ncol(data)-1), function(i){
@@ -162,9 +170,10 @@ FaciesIdentificator=function(tbd,ref,prime10tbd=T,soglia=F,valore.soglia=0.5){
   
   # output complessivo 
   output.list<-list(Jaccard=list(complessivo=ris.Jacc.TOT,
-                                 sintetico=data.frame(ris.Jacc)),
+                                 sintetico=ris.Jacc),
                     Bray=list(complessivo=ris.bray.TOT,
-                              sintetico=data.frame(ris.bray)))
+                              sintetico=ris.bray),
+                    cepNames=cep)
   
   return(output.list)
 }
