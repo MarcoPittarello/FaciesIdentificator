@@ -8,6 +8,7 @@
 #' @param valore.soglia Valore numerico (0-1) da impostare se *SOGLIA=TRUE*. Valore default=0.5
 #' @return ...
 #' @examples ...
+#' @import vegan
 #' @export
 
 FaciesIdentificator=function(tbd,ref,prime10tbd=T,soglia=F,valore.soglia=0.5){
@@ -50,7 +51,7 @@ FaciesIdentificator=function(tbd,ref,prime10tbd=T,soglia=F,valore.soglia=0.5){
   
   # cep names
   cep<-data.frame(specie=data$specie,
-                  cep=vegan::make.cepnames(data$specie))
+                  cep=make.cepnames(data$specie))
   
   
   risultato<-lapply(2:ncol(data), function(i){
