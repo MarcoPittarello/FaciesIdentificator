@@ -22,15 +22,31 @@ ui <- fluidPage(
                     tabPanel("App",
                                     sidebarLayout(
                                       sidebarPanel(
+                                        tags$h4(strong("INPUT")),
+                                        
                                         fileInput("file_tbd", "Carica file con facies DA DEFINIRE (.csv o .xlsx)", accept = c(".csv", ".xlsx")),
                                         uiOutput("sheet_select_tbd"),
+                                        
+                                        tags$hr(),
                                         
                                         fileInput("file_ref", "Carica file con facies di RIFERIMENTO (.csv o .xlsx)", accept = c(".csv", ".xlsx")),
                                         uiOutput("sheet_select_ref"),
                                         
-                                        checkboxInput("prime10", label = "Uso solo le prime 10 specie più abbondanti?", value = TRUE),
-                                        checkboxInput("soglia", "Uso un valore soglia di similarità?", value = TRUE),
-                                        numericInput("valore_soglia", "Specificare valore soglia di similarità (<=)", value = 0.5, min = 0, max = 1, step = 0.01),
+                                        tags$h4(strong("IMPOSTAZIONI")),
+                                        
+                                        checkboxInput("prime10", label = "Per il dataset da DEFINIRE, considerare solo le prime 10 specie più abbondanti?", value = TRUE),
+                                        
+                                        tags$hr(),
+                                        
+                                        checkboxInput("soglia", "Uso un valore soglia di similarità per filtrare le Facies?", value = TRUE),
+                                        
+                                        
+                                        conditionalPanel(
+                                          condition = "input.soglia == true",
+                                          tagList(
+                                            helpText("Se attivo, verranno escluse le facies con similarità superiore al valore soglia specificato."),
+                                          numericInput("valore_soglia", "Specificare valore soglia di similarità", value = 0.5, min = 0, max = 1, step = 0.01))
+                                          ),
                                         
                                         actionButton("run_btn", "Esegui Analisi")
                                       ),
