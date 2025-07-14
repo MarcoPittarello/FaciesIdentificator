@@ -1,3 +1,14 @@
+library("vegan")
+library("shiny")
+library("shinythemes")
+library("writexl")
+library("DT")
+library("readr") 
+library("readxl")
+library("FaciesIdentificator")
+
+
+
 # ---- UI ----
 ui <- fluidPage(
   titlePanel(strong("Facies Identificator")),
