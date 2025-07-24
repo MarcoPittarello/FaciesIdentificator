@@ -1,11 +1,11 @@
 name: FaciesIdentificator
-title: FaciesIdentificator
+title: faciesapp
 username: marco-pittarello
 account: marco-pittarello
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 15071969
-bundleId: 10612240
+bundleId: 10667955
 url: https://marco-pittarello.shinyapps.io/FaciesIdentificator/
 version: 1
 asMultiple: FALSE
