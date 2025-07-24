@@ -124,7 +124,7 @@ FaciesIdentificator=function(tbd,ref,prime10tbd=T,soglia=F,valore.soglia=0.5){
     }
   })
   
-  
+
   # unione output sintetici 
   ris.bray <- do.call(rbind, lapply(1:(ncol(data)-1), function(i) {
     mat <- risultato[[i]]$sintetico$Bray
@@ -161,12 +161,18 @@ FaciesIdentificator=function(tbd,ref,prime10tbd=T,soglia=F,valore.soglia=0.5){
     colnames(mat)[2]<-"BrayDistance"
     mat
   }))
-  
+  ris.bray.TOT$Tipo<-sub("^F", "", sub("\\..*", "", ris.bray.TOT$Facies))
+  ris.bray.TOT$Facies.Similarity<-paste(ris.bray.TOT$Facies,round(ris.bray.TOT$BrayDistance,3),sep = ": ")
+  ris.bray.TOT<-ris.bray.TOT[,c("Rilievo","Tipo","Facies","BrayDistance","Facies.Similarity","Spe.Abb")]
+
   ris.Jacc.TOT<-do.call(rbind,lapply(1:(ncol(data)-1), function(i){
     mat<-risultato[[i]]$info.rilievo$Jaccard
     colnames(mat)[2]<-"JaccardDistance"
     mat
   }))
+  ris.Jacc.TOT$Tipo<-sub("^F", "", sub("\\..*", "", ris.Jacc.TOT$Facies))
+  ris.Jacc.TOT$Facies.Similarity<-paste(ris.Jacc.TOT$Facies,round(ris.Jacc.TOT$JaccardDistance,3),sep = ": ")
+  ris.Jacc.TOT<-ris.Jacc.TOT[,c("Rilievo","Tipo","Facies","JaccardDistance","Facies.Similarity","Spe.Abb")]
   
   
   # output complessivo 
