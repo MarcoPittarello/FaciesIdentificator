@@ -7,6 +7,7 @@ library("readr")
 library("readxl")
 library("FaciesIdentificator")
 
+
 # ---- UI ----
 ui <- fluidPage(
   titlePanel(strong("Facies Identificator")),
@@ -35,6 +36,18 @@ ui <- fluidPage(
     ),
 
     tabPanel(
+      "Specie DB",
+      fluidPage(
+        h2(strong("Lista specie (dataFacies)")),
+        p(
+          "Anteprima della colonna 'specie' contenuta in FaciesIdentificator::dataFacies"
+        ),
+        DT::dataTableOutput("species_table"),
+        downloadButton("download_species_csv", "Scarica CSV (specie)")
+      )
+    ),
+
+    tabPanel(
       "App",
       sidebarLayout(
         sidebarPanel(
@@ -49,7 +62,6 @@ ui <- fluidPage(
 
           tags$hr(),
 
-          # file_ref controls: add option to use internal DB
           checkboxInput(
             "use_default_ref",
             "Usa database di default (dataFacies)?",
@@ -65,7 +77,6 @@ ui <- fluidPage(
             ),
             uiOutput("sheet_select_ref")
           ),
-
           tags$h4(strong("IMPOSTAZIONI")),
 
           checkboxInput(
@@ -153,6 +164,24 @@ ui <- fluidPage(
 
 # ---- SERVER ----
 server <- function(input, output, session) {
+  species_df <- data.frame(
+    specie = FaciesIdentificator::dataFacies$specie,
+    stringsAsFactors = FALSE
+  )
+
+  output$species_table <- DT::renderDataTable(
+    {
+      species_df
+    },
+    options = list(pageLength = 10)
+  )
+
+  output$download_species_csv <- downloadHandler(
+    filename = function() "dataFacies_specie.csv",
+    content = function(file) {
+      readr::write_csv(species_df, file)
+    }
+  )
   # UI dinamica per fogli xlsx
   observeEvent(input$file_tbd, {
     req(input$file_tbd)
@@ -184,7 +213,7 @@ server <- function(input, output, session) {
     }
   })
 
-  # ensure sheet selector is removed when using default db
+  # remove sheet selector when using internal DB
   observeEvent(input$use_default_ref, {
     if (isTRUE(input$use_default_ref)) {
       output$sheet_select_ref <- renderUI({
@@ -192,7 +221,6 @@ server <- function(input, output, session) {
       })
     }
   })
-
   # Funzione per leggere dati da file
   read_data <- function(file, sheet = NULL) {
     req(file)
