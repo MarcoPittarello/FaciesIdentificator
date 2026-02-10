@@ -14,7 +14,7 @@
 FaciesIdentificator = function(
   tbd,
   ref = FaciesIdentificator::dataFacies,
-  prime10tbd = T,
+  prime10tbd = F,
   soglia = F,
   valore.soglia = 0.5
 ) {
@@ -60,7 +60,7 @@ FaciesIdentificator = function(
   if (prime10tbd == T) {
     data = tbd10
   } else if (prime10tbd == F) {
-    data = tbd
+    data = data.frame(tbd)
   }
 
   # cep names

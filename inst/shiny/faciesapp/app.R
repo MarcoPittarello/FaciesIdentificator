@@ -3,109 +3,156 @@ library("shiny")
 library("shinythemes")
 library("writexl")
 library("DT")
-library("readr") 
+library("readr")
 library("readxl")
 library("FaciesIdentificator")
-
-
 
 # ---- UI ----
 ui <- fluidPage(
   titlePanel(strong("Facies Identificator")),
   #shinythemes::shinytheme("cosmo"),
-  navbarPage(icon("home"),
-                    
-                    tabPanel("Istruzioni",
-                                    fluidPage(
-                                      h2(strong("Come usare questa app")),
-                                      p("1. Carica il file con la matrice vegetazionale per la quale occorre identificare le facies (.csv o .xlsx)."),
-                                      p("2. Carica il file con la matrice vegetazionale con la composizione delle facies di riferimento (.csv o .xlsx)."),
-                                      p("3. Imposta parametri."),
-                                      p("4. Clicca 'Esegui Analisi'."),
-                                      p("5. Visualizza e scarica i risultati."),
-                                      h2(strong("Impostazioni matrice specie")),
-                                      p("Righe dataset--> SPECIE. colonna in prima posizione!"),
-                                      p("Colonne dataset --> CODICI RILIEVO"),
-                                      p("Nomenclatura: Aeschimann et al. 2004")
-                                    )
-                    ),
-                    
-                    tabPanel("App",
-                                    sidebarLayout(
-                                      sidebarPanel(
-                                        tags$h4(strong("INPUT")),
-                                        
-                                        fileInput("file_tbd", "Carica file con facies DA DEFINIRE (.csv o .xlsx)", accept = c(".csv", ".xlsx")),
-                                        uiOutput("sheet_select_tbd"),
-                                        
-                                        tags$hr(),
-                                        
-                                        fileInput("file_ref", "Carica file con facies di RIFERIMENTO (.csv o .xlsx)", accept = c(".csv", ".xlsx")),
-                                        uiOutput("sheet_select_ref"),
-                                        
-                                        tags$h4(strong("IMPOSTAZIONI")),
-                                        
-                                        checkboxInput("prime10", label = "Per il dataset da DEFINIRE, considerare solo le prime 10 specie più abbondanti?", value = TRUE),
-                                        
-                                        tags$hr(),
-                                        
-                                        checkboxInput("soglia", "Uso un valore soglia di similarità per filtrare le Facies?", value = TRUE),
-                                        
-                                        
-                                        conditionalPanel(
-                                          condition = "input.soglia == true",
-                                          tagList(
-                                            helpText("Se attivo, verranno escluse le facies con similarità superiore al valore soglia specificato."),
-                                          numericInput("valore_soglia", "Specificare valore soglia di similarità", value = 0.5, min = 0, max = 1, step = 0.01))
-                                          ),
-                                        
-                                        actionButton("run_btn", "Esegui Analisi")
-                                      ),
-                                      
-                                      mainPanel(
-                                        tabsetPanel(
-                                          tabPanel("Similarità Presenza/Assenza (Jaccard)",
-                                                          tabsetPanel(
-                                                            tabPanel("Complessivo",
-                                                                            DT::dataTableOutput("jaccard_tot"),
-                                                                            downloadButton("download_jaccard_tot_csv", "Scarica CSV"),
-                                                                            downloadButton("download_jaccard_tot_xlsx", "Scarica XLSX")
-                                                            ),
-                                                            tabPanel("Sintetico",
-                                                                            DT::dataTableOutput("jaccard_synth"),
-                                                                            downloadButton("download_jaccard_synth_csv", "Scarica CSV"),
-                                                                            downloadButton("download_jaccard_synth_xlsx", "Scarica XLSX")
-                                                            )
-                                                          )
-                                          ),
-                                          tabPanel("Similarità per abbondanza (Bray curtis)",
-                                                          tabsetPanel(
-                                                            tabPanel("Complessivo",
-                                                                            DT::dataTableOutput("bray_tot"),
-                                                                            downloadButton("download_bray_tot_csv", "Scarica CSV"),
-                                                                            downloadButton("download_bray_tot_xlsx", "Scarica XLSX")
-                                                            ),
-                                                            tabPanel("Sintetico",
-                                                                            DT::dataTableOutput("bray_synth"),
-                                                                            downloadButton("download_bray_synth_csv", "Scarica CSV"),
-                                                                            downloadButton("download_bray_synth_xlsx", "Scarica XLSX")
-                                                            )
-                                                          )
-                                          ),
-                                          tabPanel("CEP names",
-                                                   DT::dataTableOutput("cep_tab"),
-                                                   downloadButton("download_cep_csv", "Scarica CSV"),
-                                                   downloadButton("download_cep_xlsx", "Scarica XLSX"))
-                                        )
-                                      )
-                                    )
-                    )
+  navbarPage(
+    icon("home"),
+
+    tabPanel(
+      "Istruzioni",
+      fluidPage(
+        h2(strong("Come usare questa app")),
+        p(
+          "1. Carica il file con la matrice vegetazionale per la quale occorre identificare le facies (.csv o .xlsx)."
+        ),
+        p(
+          "2. Carica il file con la matrice vegetazionale con la composizione delle facies di riferimento (.csv o .xlsx)."
+        ),
+        p("3. Imposta parametri."),
+        p("4. Clicca 'Esegui Analisi'."),
+        p("5. Visualizza e scarica i risultati."),
+        h2(strong("Impostazioni matrice specie")),
+        p("Righe dataset--> SPECIE. colonna in prima posizione!"),
+        p("Colonne dataset --> CODICI RILIEVO"),
+        p("Nomenclatura: Aeschimann et al. 2004")
+      )
+    ),
+
+    tabPanel(
+      "App",
+      sidebarLayout(
+        sidebarPanel(
+          tags$h4(strong("INPUT")),
+
+          fileInput(
+            "file_tbd",
+            "Carica file con facies DA DEFINIRE (.csv o .xlsx)",
+            accept = c(".csv", ".xlsx")
+          ),
+          uiOutput("sheet_select_tbd"),
+
+          tags$hr(),
+
+          # file_ref controls: add option to use internal DB
+          checkboxInput(
+            "use_default_ref",
+            "Usa database di default (dataFacies)?",
+            value = TRUE
+          ),
+
+          conditionalPanel(
+            condition = "input.use_default_ref == false",
+            fileInput(
+              "file_ref",
+              "Carica file con facies di RIFERIMENTO (.csv o .xlsx)",
+              accept = c(".csv", ".xlsx")
+            ),
+            uiOutput("sheet_select_ref")
+          ),
+
+          tags$h4(strong("IMPOSTAZIONI")),
+
+          checkboxInput(
+            "prime10",
+            label = "Per il dataset da DEFINIRE, considerare solo le prime 10 specie più abbondanti?",
+            value = TRUE
+          ),
+
+          tags$hr(),
+
+          checkboxInput(
+            "soglia",
+            "Uso un valore soglia di similarità per filtrare le Facies?",
+            value = TRUE
+          ),
+
+          conditionalPanel(
+            condition = "input.soglia == true",
+            tagList(
+              helpText(
+                "Se attivo, verranno escluse le facies con similarità superiore al valore soglia specificato."
+              ),
+              numericInput(
+                "valore_soglia",
+                "Specificare valore soglia di similarità",
+                value = 0.5,
+                min = 0,
+                max = 1,
+                step = 0.01
+              )
+            )
+          ),
+
+          actionButton("run_btn", "Esegui Analisi")
+        ),
+
+        mainPanel(
+          tabsetPanel(
+            tabPanel(
+              "Similarità Presenza/Assenza (Jaccard)",
+              tabsetPanel(
+                tabPanel(
+                  "Complessivo",
+                  DT::dataTableOutput("jaccard_tot"),
+                  downloadButton("download_jaccard_tot_csv", "Scarica CSV"),
+                  downloadButton("download_jaccard_tot_xlsx", "Scarica XLSX")
+                ),
+                tabPanel(
+                  "Sintetico",
+                  DT::dataTableOutput("jaccard_synth"),
+                  downloadButton("download_jaccard_synth_csv", "Scarica CSV"),
+                  downloadButton("download_jaccard_synth_xlsx", "Scarica XLSX")
+                )
+              )
+            ),
+            tabPanel(
+              "Similarità per abbondanza (Bray curtis)",
+              tabsetPanel(
+                tabPanel(
+                  "Complessivo",
+                  DT::dataTableOutput("bray_tot"),
+                  downloadButton("download_bray_tot_csv", "Scarica CSV"),
+                  downloadButton("download_bray_tot_xlsx", "Scarica XLSX")
+                ),
+                tabPanel(
+                  "Sintetico",
+                  DT::dataTableOutput("bray_synth"),
+                  downloadButton("download_bray_synth_csv", "Scarica CSV"),
+                  downloadButton("download_bray_synth_xlsx", "Scarica XLSX")
+                )
+              )
+            ),
+            tabPanel(
+              "CEP names",
+              DT::dataTableOutput("cep_tab"),
+              downloadButton("download_cep_csv", "Scarica CSV"),
+              downloadButton("download_cep_xlsx", "Scarica XLSX")
+            )
+          )
+        )
+      )
+    )
   )
 )
 
 # ---- SERVER ----
 server <- function(input, output, session) {
-  
   # UI dinamica per fogli xlsx
   observeEvent(input$file_tbd, {
     req(input$file_tbd)
@@ -116,10 +163,12 @@ server <- function(input, output, session) {
         selectInput("sheet_tbd", "Seleziona foglio", choices = sheets)
       })
     } else {
-      output$sheet_select_tbd <- renderUI({ NULL })
+      output$sheet_select_tbd <- renderUI({
+        NULL
+      })
     }
   })
-  
+
   observeEvent(input$file_ref, {
     req(input$file_ref)
     ext <- tools::file_ext(input$file_ref$name)
@@ -129,10 +178,21 @@ server <- function(input, output, session) {
         selectInput("sheet_ref", "Seleziona foglio", choices = sheets)
       })
     } else {
-      output$sheet_select_ref <- renderUI({ NULL })
+      output$sheet_select_ref <- renderUI({
+        NULL
+      })
     }
   })
-  
+
+  # ensure sheet selector is removed when using default db
+  observeEvent(input$use_default_ref, {
+    if (isTRUE(input$use_default_ref)) {
+      output$sheet_select_ref <- renderUI({
+        NULL
+      })
+    }
+  })
+
   # Funzione per leggere dati da file
   read_data <- function(file, sheet = NULL) {
     req(file)
@@ -145,17 +205,30 @@ server <- function(input, output, session) {
       validate("Formato file non supportato.")
     }
   }
-  
+
   # Analisi al click
   dati <- eventReactive(input$run_btn, {
-    req(input$file_tbd, input$file_ref)
-    
+    req(input$file_tbd)
+    if (!isTRUE(input$use_default_ref)) {
+      req(input$file_ref)
+    }
+
     ext_tbd <- tools::file_ext(input$file_tbd$name)
-    ext_ref <- tools::file_ext(input$file_ref$name)
-    
-    tbd <- read_data(input$file_tbd, sheet = if (ext_tbd == "xlsx") input$sheet_tbd else NULL)
-    ref <- read_data(input$file_ref, sheet = if (ext_ref == "xlsx") input$sheet_ref else NULL)
-    
+    tbd <- read_data(
+      input$file_tbd,
+      sheet = if (ext_tbd == "xlsx") input$sheet_tbd else NULL
+    )
+
+    if (isTRUE(input$use_default_ref)) {
+      ref <- FaciesIdentificator::dataFacies
+    } else {
+      ext_ref <- tools::file_ext(input$file_ref$name)
+      ref <- read_data(
+        input$file_ref,
+        sheet = if (ext_ref == "xlsx") input$sheet_ref else NULL
+      )
+    }
+
     FaciesIdentificator(
       tbd = tbd,
       ref = ref,
@@ -164,13 +237,41 @@ server <- function(input, output, session) {
       valore.soglia = input$valore_soglia
     )
   })
-  
+
   # Output tabelle con filtro
-  output$jaccard_tot <- DT::renderDataTable({ req(dati()); dati()$Jaccard$complessivo }, filter = "top", options = list(pageLength = 10))
-  output$jaccard_synth <- DT::renderDataTable({ req(dati()); dati()$Jaccard$sintetico }, filter = "top", options = list(pageLength = 10))
-  output$bray_tot <- DT::renderDataTable({ req(dati()); dati()$Bray$complessivo }, filter = "top", options = list(pageLength = 10))
-  output$bray_synth <- DT::renderDataTable({ req(dati()); dati()$Bray$sintetico }, filter = "top", options = list(pageLength = 10))
-  
+  output$jaccard_tot <- DT::renderDataTable(
+    {
+      req(dati())
+      dati()$Jaccard$complessivo
+    },
+    filter = "top",
+    options = list(pageLength = 10)
+  )
+  output$jaccard_synth <- DT::renderDataTable(
+    {
+      req(dati())
+      dati()$Jaccard$sintetico
+    },
+    filter = "top",
+    options = list(pageLength = 10)
+  )
+  output$bray_tot <- DT::renderDataTable(
+    {
+      req(dati())
+      dati()$Bray$complessivo
+    },
+    filter = "top",
+    options = list(pageLength = 10)
+  )
+  output$bray_synth <- DT::renderDataTable(
+    {
+      req(dati())
+      dati()$Bray$sintetico
+    },
+    filter = "top",
+    options = list(pageLength = 10)
+  )
+
   # Download handler Jaccard
   output$download_jaccard_tot_csv <- downloadHandler(
     filename = function() "Jaccard_complessivo.csv",
@@ -178,7 +279,9 @@ server <- function(input, output, session) {
   )
   output$download_jaccard_tot_xlsx <- downloadHandler(
     filename = function() "Jaccard_complessivo.xlsx",
-    content = function(file) writexl::write_xlsx(dati()$Jaccard$complessivo, path = file)
+    content = function(file) {
+      writexl::write_xlsx(dati()$Jaccard$complessivo, path = file)
+    }
   )
   output$download_jaccard_synth_csv <- downloadHandler(
     filename = function() "Jaccard_sintetico.csv",
@@ -186,9 +289,11 @@ server <- function(input, output, session) {
   )
   output$download_jaccard_synth_xlsx <- downloadHandler(
     filename = function() "Jaccard_sintetico.xlsx",
-    content = function(file) writexl::write_xlsx(dati()$Jaccard$sintetico, path = file)
+    content = function(file) {
+      writexl::write_xlsx(dati()$Jaccard$sintetico, path = file)
+    }
   )
-  
+
   # Download handler Bray
   output$download_bray_tot_csv <- downloadHandler(
     filename = function() "Bray_complessivo.csv",
@@ -196,7 +301,9 @@ server <- function(input, output, session) {
   )
   output$download_bray_tot_xlsx <- downloadHandler(
     filename = function() "Bray_complessivo.xlsx",
-    content = function(file) writexl::write_xlsx(dati()$Bray$complessivo, path = file)
+    content = function(file) {
+      writexl::write_xlsx(dati()$Bray$complessivo, path = file)
+    }
   )
   output$download_bray_synth_csv <- downloadHandler(
     filename = function() "Bray_sintetico.csv",
@@ -204,15 +311,21 @@ server <- function(input, output, session) {
   )
   output$download_bray_synth_xlsx <- downloadHandler(
     filename = function() "Bray_sintetico.xlsx",
-    content = function(file) writexl::write_xlsx(dati()$Bray$sintetico, path = file)
+    content = function(file) {
+      writexl::write_xlsx(dati()$Bray$sintetico, path = file)
+    }
   )
-  
+
   # Output CEP
-  output$cep_tab <- DT::renderDataTable({
-    req(dati())
-    dati()$cepNames
-  }, filter = "top", options = list(pageLength = 10))
-  
+  output$cep_tab <- DT::renderDataTable(
+    {
+      req(dati())
+      dati()$cepNames
+    },
+    filter = "top",
+    options = list(pageLength = 10)
+  )
+
   # Download handler CEP
   output$download_cep_csv <- downloadHandler(
     filename = function() "Classificazione_CEP.csv",
