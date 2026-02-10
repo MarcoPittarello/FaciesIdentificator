@@ -2,7 +2,7 @@
 #'
 #' @description Identifica le facies pastorali sensu Cavallero et al (2007) di rilievi vegetazionali
 #' @param tbd Dataframe con rilievi vegetazionali da identificare (tbd=To be defined). Righe = Specie (nomenclatura Aeschimann et al 2004), Colonne = Rilievi
-#' @param ref Dataframe con facies di riferimento. Righe = Specie (nomenclatura Aeschimann et al 2004), Colonne = Rilievi
+#' @param ref Dataframe con facies di riferimento. Righe = Specie (nomenclatura Aeschimann et al 2004), Colonne = Rilievi. Default = matrice facies da Cavallero et al (2007)
 #' @param prime10tbd LOGICAL. Se TRUE utilizza le prime 10 specie in ordine di abbondanza decrescente del database con rilievi da identificare
 #' @param soglia LOGICAL.Se TRUE saranno filtrate le facies con un indice di somiglianza (Jaccard o Bray) minore della soglia impostata con *valore.soglia*
 #' @param valore.soglia Valore numerico (0-1) da impostare se *SOGLIA=TRUE*. Valore default=0.5
@@ -13,7 +13,7 @@
 
 FaciesIdentificator = function(
   tbd,
-  ref,
+  ref = FaciesIdentificator::dataFacies,
   prime10tbd = T,
   soglia = F,
   valore.soglia = 0.5

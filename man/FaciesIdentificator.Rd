@@ -4,12 +4,18 @@
 \alias{FaciesIdentificator}
 \title{Facies Identificator}
 \usage{
-FaciesIdentificator(tbd, ref, prime10tbd = T, soglia = F, valore.soglia = 0.5)
+FaciesIdentificator(
+  tbd,
+  ref = FaciesIdentificator::dataFacies,
+  prime10tbd = T,
+  soglia = F,
+  valore.soglia = 0.5
+)
 }
 \arguments{
 \item{tbd}{Dataframe con rilievi vegetazionali da identificare (tbd=To be defined). Righe = Specie (nomenclatura Aeschimann et al 2004), Colonne = Rilievi}
 
-\item{ref}{Dataframe con facies di riferimento. Righe = Specie (nomenclatura Aeschimann et al 2004), Colonne = Rilievi}
+\item{ref}{Dataframe con facies di riferimento. Righe = Specie (nomenclatura Aeschimann et al 2004), Colonne = Rilievi. Default = matrice facies da Cavallero et al (2007)}
 
 \item{prime10tbd}{LOGICAL. Se TRUE utilizza le prime 10 specie in ordine di abbondanza decrescente del database con rilievi da identificare}
 
@@ -18,7 +24,7 @@ FaciesIdentificator(tbd, ref, prime10tbd = T, soglia = F, valore.soglia = 0.5)
 \item{valore.soglia}{Valore numerico (0-1) da impostare se \emph{SOGLIA=TRUE}. Valore default=0.5}
 }
 \value{
-...
+Matrici con le facies più simili a ciascun rilievo da identificare, ordinate per indice di somiglianza (Bray o Jaccard) e con indicazione dell'abbondanza delle specie nelle facies di riferimento.
 }
 \description{
 Identifica le facies pastorali sensu Cavallero et al (2007) di rilievi vegetazionali
