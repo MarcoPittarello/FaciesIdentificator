@@ -7,13 +7,13 @@
 FaciesIdentificator(
   tbd,
   ref = FaciesIdentificator::dataFacies,
-  prime10tbd = T,
+  prime10tbd = F,
   soglia = F,
   valore.soglia = 0.5
 )
 }
 \arguments{
-\item{tbd}{Dataframe con rilievi vegetazionali da identificare (tbd=To be defined). Righe = Specie (nomenclatura Aeschimann et al 2004), Colonne = Rilievi}
+\item{tbd}{Dataframe con rilievi vegetazionali da identificare (tbd=To be defined). Righe = Specie (nomenclatura Aeschimann et al 2004), Colonne = Rilievi. La prima colonna deve contenere i nomi delle specie secondo la nomenclatura di Aeschimann et al (2004). Le altre colonne devono contenere i rilievi da identificare, con valori di abbondanza (o presenza/assenza) per ciascuna specie.}
 
 \item{ref}{Dataframe con facies di riferimento. Righe = Specie (nomenclatura Aeschimann et al 2004), Colonne = Rilievi. Default = matrice facies da Cavallero et al (2007)}
 
