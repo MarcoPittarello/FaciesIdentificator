@@ -1,7 +1,7 @@
 #' Facies Identificator
 #'
 #' @description Identifica le facies pastorali sensu Cavallero et al (2007) di rilievi vegetazionali
-#' @param tbd Dataframe con rilievi vegetazionali da identificare (tbd=To be defined). Righe = Specie (nomenclatura Aeschimann et al 2004), Colonne = Rilievi
+#' @param tbd Dataframe con rilievi vegetazionali da identificare (tbd=To be defined). Righe = Specie (nomenclatura Aeschimann et al 2004), Colonne = Rilievi. La prima colonna deve contenere i nomi delle specie secondo la nomenclatura di Aeschimann et al (2004). Le altre colonne devono contenere i rilievi da identificare, con valori di abbondanza (o presenza/assenza) per ciascuna specie.
 #' @param ref Dataframe con facies di riferimento. Righe = Specie (nomenclatura Aeschimann et al 2004), Colonne = Rilievi. Default = matrice facies da Cavallero et al (2007)
 #' @param prime10tbd LOGICAL. Se TRUE utilizza le prime 10 specie in ordine di abbondanza decrescente del database con rilievi da identificare
 #' @param soglia LOGICAL.Se TRUE saranno filtrate le facies con un indice di somiglianza (Jaccard o Bray) minore della soglia impostata con *valore.soglia*
@@ -103,10 +103,32 @@ FaciesIdentificator = function(
     Jacc <- Jacc[order(Jacc[, 2], decreasing = F), ]
     Jacc$Rilievo <- names(Jacc)[2]
 
+    # chord
+    chordDist <- data.frame(as.matrix(vegdist(
+      t.mrgd,
+      method = "chord",
+      upper = T
+    )))
+    chordDist$Facies <- rownames(chordDist)
+    chordDist <- chordDist[, names(chordDist) %in% c("Facies", ril.sel)]
+    chordDist <- chordDist[chordDist$Facies != ril.sel, ]
+    chordDist <- merge(chordDist, tenSpe.Ref, by = "Facies")
+    chordDist <- chordDist[order(chordDist[, 2], decreasing = F), ]
+    chordDist$Rilievo <- names(chordDist)[2]
+
     # output complessivo (info per rilievo)
-    output.info.rilievo <- list(Bray = brayDist, Jaccard = Jacc)
+    output.info.rilievo <- list(
+      Chord = chordDist,
+      Bray = brayDist,
+      Jaccard = Jacc
+    )
 
     #output sintetico
+    chordDist$Facies.chordDist <- paste(
+      chordDist$Facies,
+      round(chordDist[, 2], 3),
+      sep = ": "
+    )
     brayDist$Facies.BrayDist <- paste(
       brayDist$Facies,
       round(brayDist[, 2], 3),
@@ -117,6 +139,7 @@ FaciesIdentificator = function(
     if (soglia == T) {
       brayDist.soglia <- subset(brayDist, brayDist[, 2] <= valore.soglia)
       Jacc.soglia <- subset(Jacc, Jacc[, 2] <= valore.soglia)
+      chordDist.soglia <- subset(chordDist, chordDist[, 2] <= valore.soglia)
 
       elencoFaciesBray <- t(data.frame(
         Facies = brayDist.soglia$Facies.BrayDist
@@ -126,7 +149,13 @@ FaciesIdentificator = function(
       elencoFaciesJacc <- t(data.frame(Facies = Jacc.soglia$Facies.Jacc))
       rownames(elencoFaciesJacc) <- names(Jacc)[2]
 
+      elencoFaciesChord <- t(data.frame(
+        Facies = chordDist.soglia$Facies.chordDist
+      ))
+      rownames(elencoFaciesChord) <- names(chordDist)[2]
+
       output.sintetico <- list(
+        Chord = elencoFaciesChord,
         Bray = elencoFaciesBray,
         Jaccard = elencoFaciesJacc
       )
@@ -136,6 +165,9 @@ FaciesIdentificator = function(
         sintetico = output.sintetico
       )
     } else if (soglia == F) {
+      elencoFaciesChord <- t(data.frame(Facies = chordDist$Facies.chordDist))
+      rownames(elencoFaciesChord) <- names(chordDist)[2]
+
       elencoFaciesBray <- t(data.frame(Facies = brayDist$Facies.BrayDist))
       rownames(elencoFaciesBray) <- names(brayDist)[2]
 
@@ -143,6 +175,7 @@ FaciesIdentificator = function(
       rownames(elencoFaciesJacc) <- names(Jacc)[2]
 
       output.sintetico <- list(
+        Chord = elencoFaciesChord,
         Bray = elencoFaciesBray,
         Jaccard = elencoFaciesJacc
       )
@@ -155,6 +188,26 @@ FaciesIdentificator = function(
   })
 
   # unione output sintetici
+  ris.chord <- do.call(
+    rbind,
+    lapply(1:(ncol(data) - 1), function(i) {
+      mat <- risultato[[i]]$sintetico$Chord
+      n <- length(mat)
+      n.max <- max(sapply(risultato, function(x) ncol(x$sintetico$Chord))) #numero colonne massimo nei risultati
+      # Se ha meno del numero max di colonne, aggiunge colonne vuote
+      if (n < n.max) {
+        mat <- cbind(mat, matrix(NA, nrow = 1, ncol = n.max - n))
+      }
+      colnames(mat) <- paste0("Facies_", 1:n.max) # nomi coerenti
+      mat
+    })
+  )
+
+  ris.chord <- cbind(
+    data.frame(rilievo = rownames(ris.chord)),
+    data.frame(ris.chord)
+  )
+
   ris.bray <- do.call(
     rbind,
     lapply(1:(ncol(data) - 1), function(i) {
@@ -195,6 +248,29 @@ FaciesIdentificator = function(
   )
 
   # unione output complessivi
+  ris.chord.TOT <- do.call(
+    rbind,
+    lapply(1:(ncol(data) - 1), function(i) {
+      mat <- risultato[[i]]$info.rilievo$Chord
+      colnames(mat)[2] <- "ChordDistance"
+      mat
+    })
+  )
+  ris.chord.TOT$Tipo <- sub("^F", "", sub("\\..*", "", ris.chord.TOT$Facies))
+  ris.chord.TOT$Facies.Similarity <- paste(
+    ris.chord.TOT$Facies,
+    round(ris.chord.TOT$ChordDistance, 3),
+    sep = ": "
+  )
+  ris.chord.TOT <- ris.chord.TOT[, c(
+    "Rilievo",
+    "Tipo",
+    "Facies",
+    "ChordDistance",
+    "Facies.Similarity",
+    "Spe.Abb"
+  )]
+
   ris.bray.TOT <- do.call(
     rbind,
     lapply(1:(ncol(data) - 1), function(i) {
@@ -243,6 +319,7 @@ FaciesIdentificator = function(
 
   # output complessivo
   output.list <- list(
+    Chord = list(complessivo = ris.chord.TOT, sintetico = ris.chord),
     Jaccard = list(complessivo = ris.Jacc.TOT, sintetico = ris.Jacc),
     Bray = list(complessivo = ris.bray.TOT, sintetico = ris.bray),
     cepNames = cep

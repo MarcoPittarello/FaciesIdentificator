@@ -11,7 +11,6 @@ library("FaciesIdentificator")
 # ---- UI ----
 ui <- fluidPage(
   titlePanel(strong("Facies Identificator")),
-  #shinythemes::shinytheme("cosmo"),
   navbarPage(
     icon("home"),
 
@@ -52,22 +51,18 @@ ui <- fluidPage(
       sidebarLayout(
         sidebarPanel(
           tags$h4(strong("INPUT")),
-
           fileInput(
             "file_tbd",
             "Carica file con facies DA DEFINIRE (.csv o .xlsx)",
             accept = c(".csv", ".xlsx")
           ),
           uiOutput("sheet_select_tbd"),
-
           tags$hr(),
-
           checkboxInput(
             "use_default_ref",
             "Usa database di default (dataFacies)?",
             value = TRUE
           ),
-
           conditionalPanel(
             condition = "input.use_default_ref == false",
             fileInput(
@@ -78,21 +73,17 @@ ui <- fluidPage(
             uiOutput("sheet_select_ref")
           ),
           tags$h4(strong("IMPOSTAZIONI")),
-
           checkboxInput(
             "prime10",
             label = "Per il dataset da DEFINIRE, considerare solo le prime 10 specie più abbondanti?",
             value = TRUE
           ),
-
           tags$hr(),
-
           checkboxInput(
             "soglia",
             "Uso un valore soglia di similarità per filtrare le Facies?",
             value = TRUE
           ),
-
           conditionalPanel(
             condition = "input.soglia == true",
             tagList(
@@ -109,29 +100,29 @@ ui <- fluidPage(
               )
             )
           ),
-
           actionButton("run_btn", "Esegui Analisi")
         ),
 
         mainPanel(
           tabsetPanel(
             tabPanel(
-              "Similarità Presenza/Assenza (Jaccard)",
+              "Similarità per abbondanza (Chord)",
               tabsetPanel(
                 tabPanel(
                   "Complessivo",
-                  DT::dataTableOutput("jaccard_tot"),
-                  downloadButton("download_jaccard_tot_csv", "Scarica CSV"),
-                  downloadButton("download_jaccard_tot_xlsx", "Scarica XLSX")
+                  DT::dataTableOutput("chord_tot"),
+                  downloadButton("download_chord_tot_csv", "Scarica CSV"),
+                  downloadButton("download_chord_tot_xlsx", "Scarica XLSX")
                 ),
                 tabPanel(
                   "Sintetico",
-                  DT::dataTableOutput("jaccard_synth"),
-                  downloadButton("download_jaccard_synth_csv", "Scarica CSV"),
-                  downloadButton("download_jaccard_synth_xlsx", "Scarica XLSX")
+                  DT::dataTableOutput("chord_synth"),
+                  downloadButton("download_chord_synth_csv", "Scarica CSV"),
+                  downloadButton("download_chord_synth_xlsx", "Scarica XLSX")
                 )
               )
             ),
+
             tabPanel(
               "Similarità per abbondanza (Bray curtis)",
               tabsetPanel(
@@ -146,6 +137,23 @@ ui <- fluidPage(
                   DT::dataTableOutput("bray_synth"),
                   downloadButton("download_bray_synth_csv", "Scarica CSV"),
                   downloadButton("download_bray_synth_xlsx", "Scarica XLSX")
+                )
+              )
+            ),
+            tabPanel(
+              "Similarità Presenza/Assenza (Jaccard)",
+              tabsetPanel(
+                tabPanel(
+                  "Complessivo",
+                  DT::dataTableOutput("jaccard_tot"),
+                  downloadButton("download_jaccard_tot_csv", "Scarica CSV"),
+                  downloadButton("download_jaccard_tot_xlsx", "Scarica XLSX")
+                ),
+                tabPanel(
+                  "Sintetico",
+                  DT::dataTableOutput("jaccard_synth"),
+                  downloadButton("download_jaccard_synth_csv", "Scarica CSV"),
+                  downloadButton("download_jaccard_synth_xlsx", "Scarica XLSX")
                 )
               )
             ),
@@ -178,11 +186,9 @@ server <- function(input, output, session) {
 
   output$download_species_csv <- downloadHandler(
     filename = function() "dataFacies_specie.csv",
-    content = function(file) {
-      readr::write_csv(species_df, file)
-    }
+    content = function(file) readr::write_csv(species_df, file)
   )
-  # UI dinamica per fogli xlsx
+
   observeEvent(input$file_tbd, {
     req(input$file_tbd)
     ext <- tools::file_ext(input$file_tbd$name)
@@ -213,7 +219,6 @@ server <- function(input, output, session) {
     }
   })
 
-  # remove sheet selector when using internal DB
   observeEvent(input$use_default_ref, {
     if (isTRUE(input$use_default_ref)) {
       output$sheet_select_ref <- renderUI({
@@ -221,7 +226,7 @@ server <- function(input, output, session) {
       })
     }
   })
-  # Funzione per leggere dati da file
+
   read_data <- function(file, sheet = NULL) {
     req(file)
     ext <- tools::file_ext(file$datapath)
@@ -234,7 +239,6 @@ server <- function(input, output, session) {
     }
   }
 
-  # Analisi al click
   dati <- eventReactive(input$run_btn, {
     req(input$file_tbd)
     if (!isTRUE(input$use_default_ref)) {
@@ -266,7 +270,46 @@ server <- function(input, output, session) {
     )
   })
 
-  # Output tabelle con filtro
+  # --- Chord outputs ---
+  output$chord_tot <- DT::renderDataTable(
+    {
+      req(dati())
+      dati()$Chord$complessivo
+    },
+    filter = "top",
+    options = list(pageLength = 10)
+  )
+  output$chord_synth <- DT::renderDataTable(
+    {
+      req(dati())
+      dati()$Chord$sintetico
+    },
+    filter = "top",
+    options = list(pageLength = 10)
+  )
+
+  output$download_chord_tot_csv <- downloadHandler(
+    filename = function() "Chord_complessivo.csv",
+    content = function(file) readr::write_csv(dati()$Chord$complessivo, file)
+  )
+  output$download_chord_tot_xlsx <- downloadHandler(
+    filename = function() "Chord_complessivo.xlsx",
+    content = function(file) {
+      writexl::write_xlsx(dati()$Chord$complessivo, path = file)
+    }
+  )
+  output$download_chord_synth_csv <- downloadHandler(
+    filename = function() "Chord_sintetico.csv",
+    content = function(file) readr::write_csv(dati()$Chord$sintetico, file)
+  )
+  output$download_chord_synth_xlsx <- downloadHandler(
+    filename = function() "Chord_sintetico.xlsx",
+    content = function(file) {
+      writexl::write_xlsx(dati()$Chord$sintetico, path = file)
+    }
+  )
+
+  # --- Jaccard outputs ---
   output$jaccard_tot <- DT::renderDataTable(
     {
       req(dati())
@@ -283,24 +326,7 @@ server <- function(input, output, session) {
     filter = "top",
     options = list(pageLength = 10)
   )
-  output$bray_tot <- DT::renderDataTable(
-    {
-      req(dati())
-      dati()$Bray$complessivo
-    },
-    filter = "top",
-    options = list(pageLength = 10)
-  )
-  output$bray_synth <- DT::renderDataTable(
-    {
-      req(dati())
-      dati()$Bray$sintetico
-    },
-    filter = "top",
-    options = list(pageLength = 10)
-  )
 
-  # Download handler Jaccard
   output$download_jaccard_tot_csv <- downloadHandler(
     filename = function() "Jaccard_complessivo.csv",
     content = function(file) readr::write_csv(dati()$Jaccard$complessivo, file)
@@ -322,7 +348,24 @@ server <- function(input, output, session) {
     }
   )
 
-  # Download handler Bray
+  # --- Bray outputs ---
+  output$bray_tot <- DT::renderDataTable(
+    {
+      req(dati())
+      dati()$Bray$complessivo
+    },
+    filter = "top",
+    options = list(pageLength = 10)
+  )
+  output$bray_synth <- DT::renderDataTable(
+    {
+      req(dati())
+      dati()$Bray$sintetico
+    },
+    filter = "top",
+    options = list(pageLength = 10)
+  )
+
   output$download_bray_tot_csv <- downloadHandler(
     filename = function() "Bray_complessivo.csv",
     content = function(file) readr::write_csv(dati()$Bray$complessivo, file)
@@ -344,7 +387,7 @@ server <- function(input, output, session) {
     }
   )
 
-  # Output CEP
+  # --- CEP outputs ---
   output$cep_tab <- DT::renderDataTable(
     {
       req(dati())
@@ -354,7 +397,6 @@ server <- function(input, output, session) {
     options = list(pageLength = 10)
   )
 
-  # Download handler CEP
   output$download_cep_csv <- downloadHandler(
     filename = function() "Classificazione_CEP.csv",
     content = function(file) readr::write_csv(dati()$cepNames, file)
